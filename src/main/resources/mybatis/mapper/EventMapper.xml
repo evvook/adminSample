@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="abd.sample.repository.EventRepository">
+  <select id="retrieveEvent" parameterType="hashMap" resultType="hashMap">
+  	SELECT
+  		 EVENT_CD
+  		,SCENE_CD
+  	FROM EVENT_SCENE
+  	GROUP BY EVENT_CD,SCENE_CD
+  </select>
+  <select id="retrieveEventByEventCode" parameterType="hashMap" resultType="hashMap">
+  	SELECT
+  		 EVENT_SEQ
+  		,E_TYPE
+  		,EVENT_DESC
+  	FROM EVENT_SCENE
+  	WHERE EVENT_CD = #{event_cd}
+  </select>
+</mapper>

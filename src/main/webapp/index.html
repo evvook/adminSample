@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+<style>
+	.container{
+		display:flex;
+	}
+	.leftList{
+		width:300px;
+	}
+	.main{
+		width:100%;
+	}
+	.form{
+		display:flex;
+		flex-direction: column;
+		justify-content: center;
+		height:250px;
+	}
+	.form div{
+		display:flex;
+		justify-content: center;
+		width:100%;
+		margin-bottom:10px;
+	}
+	.form label{
+		width:100px;
+		text-align:left;
+	}
+	#list li{
+		cursor:context-menu;
+		margin:5px;
+	}
+	#list li:hover {
+	   box-shadow:
+	   -7px -7px 20px 0px #fff9,
+	   -4px -4px 5px 0px #fff9,
+	   7px 7px 20px 0px #0002,
+	   4px 4px 5px 0px #0001;
+}
+</style>
+<script type="text/javascript">
+
+	function load(){
+		drawGrid();
+		
+		ajaxRequest('/event',{},loadList);
+	}
+	
+	let grid;
+
+	function ajaxRequest(url,inputs,callback){
+		
+		var reqJson = inputs;
+		/* 통신에 사용 될 XMLHttpRequest 객체 정의 */
+		httpRequest = new XMLHttpRequest();
+		httpRequest.onreadystatechange = () => {
+	    	/* readyState가 Done이고 응답 값이 200일 때, 받아온 response로 처리*/
+		    if (httpRequest.readyState === XMLHttpRequest.DONE) {
+			      if (httpRequest.status === 200) {
+			    	var result = httpRequest.response;
+			    	callback(result);
+			      } else {
+			        alert('request에 뭔가 문제가 있어요.');
+			      }
+			}
+	    };
+	    
+	    /* Post 방식으로 요청 */
+	    httpRequest.open('POST', url, true);//경로 잡아줌
+	    /* Response Type을 Json으로 사전 정의 */
+	    httpRequest.responseType = "json";
+	    /* 요청 Header에 컨텐츠 타입은 Json으로 사전 정의 */
+	    httpRequest.setRequestHeader('Content-Type', 'application/json');
+	    /* 정의된 서버에 Json 형식의 요청 Data를 포함하여 요청을 전송 */
+	    httpRequest.send(JSON.stringify(reqJson));
+	}
+	
+	function printConsoleLog(e){
+		console.log(e);
+	}
+	
+	function loadList(data){
+		let list = document.querySelector("#list");
+		for(idx in data){
+			let li = document.createElement("li");
+			li.textContent = data[idx].EVENT_CD;
+			li.addEventListener("click",doClickListItem);
+			li.data = data[idx];
+			list.appendChild(li);
+		}
+	}
+	
+	function loadGrid(data){
+		grid.resetData(data);
+	}
+	
+	function doClickListItem(e){
+		let event_cd = e.currentTarget.data.EVENT_CD;
+		let scene_cd = e.currentTarget.data.SCENE_CD;
+		
+		let input_event_cd = document.querySelector(".main > .form > div > #event_cd");
+		input_event_cd.value = event_cd;
+		let input_scene_cd = document.querySelector(".main > .form > div > #scene_cd");
+		input_scene_cd.value = scene_cd;
+		
+		ajaxRequest('/eventDetail',{event_cd:event_cd},loadGrid);
+	}
+	
+	function drawGrid(){
+		grid = new tui.Grid({
+		      el: document.querySelector('#grid'),
+		      scrollX: false,
+		      scrollY: false,
+		      columns: [
+		        {
+		          header: '이벤트 시퀀스',
+		          name: 'EVENT_SEQ',
+		          editor: {
+		              type: "text"
+		            }
+		        },
+		        {
+		          header: '이벤트 타입',
+		          name: 'E_TYPE',
+		          editor: {
+		              type: "text"
+		            }
+		        },
+		        {
+		          header: '이벤트 상세',
+		          name: 'EVENT_DESC',
+		          editor: {
+		              type: "text"
+		            }
+		        }
+		      ]
+		    });
+	}
+	
+</script>
+<body onload="load()">
+<div class="container">
+	<div class="leftList">
+		<ul id="list"></ul>
+	</div>
+	<div class="main">
+		<div class="form">
+			<div>
+				<label>이벤트코드</label>
+				<input id="event_cd"/>
+			</div>
+			<div>
+				<label>씬코드</label>
+				<input id="scene_cd"/>
+			</div>
+		</div>
+		<div class="grid" id="grid">
+		</div>
+	</div>
+</div>
+</body>
+</html>
